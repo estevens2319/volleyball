@@ -1,14 +1,14 @@
-name: Run Python Script
+name: Read Public Google Sheet
 
 on:
-  workflow_dispatch:  # Allows manual triggering from the GitHub Actions UI
+  workflow_dispatch:
 
 jobs:
-  run-script:
+  read-sheet:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -16,10 +16,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install requests
         run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install requests
 
-      - name: Run script
+      - name: Run fetch script
         run: |
           python teammaker.py
