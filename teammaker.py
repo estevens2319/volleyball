@@ -30,12 +30,16 @@ class Team:
         self.players = {}
         self.avg_stats = {}
         self.total_stats = {}
+        self.avg_all_stats = 0
 
     def get_name(self):
         return self.name
     
     def get_all_avg_stats(self):
         return self.avg_stats
+    
+    def get_avg_of_all_stats(self):
+        return self.avg_all_stats
     
     def get_all_total_stats(self):
         return self.total_stats
@@ -66,6 +70,10 @@ class Team:
                 else:
                     self.total_stats[s] += player_stats[s]
                     self.avg_stats[s] = round(self.total_stats[s] / len(self.players), 3)
+        all_stats = 0
+        for s in self.avg_stats:
+            all_stats += self.avg_stats[s]
+        self.avg_all_stats = all_stats / len(self.avg_stats)
 
 
     def get_size(self):
@@ -189,28 +197,24 @@ def check_balance(teams, balance_val):
         for t2 in teams:
             t1_stats = teams[t1].get_all_avg_stats()
             t2_stats = teams[t2].get_all_avg_stats()
-            t1_avg_all_stats = 0
-            t2_avg_all_stats = 0
+            
             for stat in t1_stats:
                 val1 = t1_stats.get(stat, 0)
                 val2 = t2_stats.get(stat, 0)
-                t1_avg_all_stats += val1
-                t2_avg_all_stats += val2
+                
                 if abs(val1 - val2) > balance_val:
                     return False
-            t1_avg_all_stats = t1_avg_all_stats / len(t1_stats)
-            t2_avg_all_stats = t2_avg_all_stats / len(t2_stats)
-            if abs(t1_avg_all_stats - t2_avg_all_stats) > balance_val:
+            
+            if abs(teams[t1].get_avg_of_all_stats() - teams[t2].get_avg_of_all_stats()) > balance_val:
                     return False
 
     return True
 
 start_time = time.time()
-balance_val = 1
+balance_val = .5
 if(len(present_players) < 5):
     found_team = True
 while(not found_team):
-    
     player_copy = present_players.copy()
     teams_copy = copy.deepcopy(teams)
     team_filler_copy = copy.deepcopy(team_filler)
@@ -229,8 +233,10 @@ while(not found_team):
     if(found_team):
         teams = teams_copy
 
-    if(time.time() - start_time > 10):
-        print("Timeout no teams found, adjusting balance value")
+    if(time.time() - start_time > 5):
+        start_time = time.time()
+        print()
+        print("Timeout no teams found with balance value " + str(balance_val) +  ". Adjusting balance value")
         balance_val += .5
 
 
@@ -238,6 +244,7 @@ while(not found_team):
 for t in teams:
     print("*** TEAM: " + t + " ***")
     print("TEAM STATS: " + str(teams[t].get_all_avg_stats()))
+    print("TOTAL TEAM STAT AVERAGE:", round(teams[t].get_avg_of_all_stats(), 3))
     team_players = "TEAM MEMBERS: "
     for p in teams[t].get_players():
         team_players += p + ", "
