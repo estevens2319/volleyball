@@ -83,7 +83,7 @@ def convert(value):
 
 present_players = {}
 
-sheet_url = "https://docs.google.com/spreadsheets/d/1ABC1234XYZ5678abcdefg/gviz/tq?tqx=out:csv&sheet=Sheet1"
+sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTet6UPHdfdsaKkFN_VB5ggHacxEDxakmZH6syhroLB7oJ3aHr5clmSbEipnQTTfLy6nfdYe6M6ZAHs/pub?output=csv"
 
 response = requests.get(sheet_url)
 response.raise_for_status()
