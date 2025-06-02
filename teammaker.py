@@ -134,81 +134,28 @@ for tn in team_names:
 
 
 
-# Separate the best players:
+# separate captains 
 
-if "Adam" in present_players and "Benjamin" in present_players and "Aaron" in present_players and "Geon" in present_players:
-    
-    
-    curr_players = ["Adam", "Benjamin", "Aaron", "Geon"]
-    random.shuffle(curr_players)
-    for p in curr_players:
+captains = ["Adam", "Benjamin", "Aaron", "Geon"]
+
+if("Aaron" not in present_players):
+    captains.append("Aiden")
+
+random.shuffle(captains)
+
+for c in captains:
+    if(c in present_players):
         prio, curr_team = heapq.heappop(team_filler)
-        teams[curr_team].add_player(p, present_players[p])
-        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
-        if(p == "Geon" and "Jenna" in present_players):
+        teams[curr_team].add_player(c, present_players[c])
+        if(c == "Geon" and "Jenna" in present_players):
             teams[curr_team].add_player("Jenna", present_players["Jenna"])
             present_players.pop("Jenna")
-        present_players.pop(p)
-    
-elif "Adam" in present_players and "Benjamin" in present_players and "Aiden" in present_players and "Geon" in present_players:
-    
-    curr_players = ["Adam", "Benjamin", "Aiden", "Geon"]
-    random.shuffle(curr_players)
-    for p in curr_players:
-        prio, curr_team = heapq.heappop(team_filler)
-        teams[curr_team].add_player(p, present_players[p])
         heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
-        if(p == "Geon" and "Jenna" in present_players):
-            teams[curr_team].add_player("Jenna", present_players["Jenna"])
-            present_players.pop("Jenna")
-        present_players.pop(p)
+        present_players.pop(c)
 
 
 
-elif "Adam" in present_players and "Benjamin" in present_players and "Aaron" in present_players: 
-    
-    curr_players = ["Adam", "Benjamin", "Aaron"]
-    random.shuffle(curr_players)
-    for p in curr_players:
-        prio, curr_team = heapq.heappop(team_filler)
-        teams[curr_team].add_player(p, present_players[p])
-        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
-        present_players.pop(p)
-
-elif "Adam" in present_players and "Benjamin" in present_players: 
-    
-    curr_players = ["Adam", "Benjamin"]
-    random.shuffle(curr_players)
-    for p in curr_players:
-        prio, curr_team = heapq.heappop(team_filler)
-        teams[curr_team].add_player(p, present_players[p])
-        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
-        present_players.pop(p)
-
-elif "Adam" in present_players and "Aaron" in present_players:
-    
-    curr_players = ["Adam", "Aaron"]
-    random.shuffle(curr_players)
-    for p in curr_players:
-        prio, curr_team = heapq.heappop(team_filler)
-        teams[curr_team].add_player(p, present_players[p])
-        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
-        present_players.pop(p)
-
-elif "Aaron" in present_players and "Benjamin" in present_players: 
-
-    curr_players = ["Benjamin", "Aaron"]
-    random.shuffle(curr_players)
-    for p in curr_players:
-        prio, curr_team = heapq.heappop(team_filler)
-        teams[curr_team].add_player(p, present_players[p])
-        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
-        present_players.pop(p)
-
-
-
-
-# Find pairs and asterisks
+# Find pairs 
 pairs = {}
 for player in present_players:
     if present_players[player]["BeWith"] != None:
