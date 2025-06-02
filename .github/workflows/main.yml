@@ -1,4 +1,4 @@
-name: Read Public Google Sheet
+name: Generate Teams
 
 on:
   workflow_dispatch:
