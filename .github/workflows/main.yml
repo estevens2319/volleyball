@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  read-sheet:
+  create-teams:
     runs-on: ubuntu-latest
 
     steps:
