@@ -1,0 +1,18 @@
+Make the following amount of teams unless overwritten in these parentheses ( teams)
+10–14 people, make 2 teams
+15-21 people make 3 teams
+22-28 people make 4 teams
+
+
+You keep Adam, Benjamin and Aaron on opposite teams. This is first highest priority
+If aaron isn’t Present, swap him out for Geon
+If there are more than three teams, keep  Aaron, Adam, Benjamin and Geon on opposite teams. If Aaron isn’t there swap him for Aiden
+This rule cannot be broken at any time. After the teams have been made. Recheck this rule, if this rule was broken, start back again from the beginning.
+
+
+You keep these pairs on the same team if they’re both present. This is the  2nd highest priority. Don’t break this rule at any circumstance
+Joy with Bryan
+Sam with Tim
+Lucy with Eli
+Jenna with Geon
+Jordan with Zach
