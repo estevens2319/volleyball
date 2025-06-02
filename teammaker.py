@@ -131,124 +131,72 @@ for tn in team_names:
 
 if "Adam" in present_players and "Benjamin" in present_players and "Aaron" in present_players and "Geon" in present_players:
     
-    prio, adam_team = heapq.heappop(team_filler)
-    teams[adam_team].add_player("Adam", present_players["Adam"])
-    heapq.heappush(team_filler, (teams[adam_team].get_size(), adam_team))
-
-    prio, benjamin_team = heapq.heappop(team_filler)
-    teams[benjamin_team].add_player("Benjamin", present_players["Benjamin"])
-    heapq.heappush(team_filler, (teams[benjamin_team].get_size(), benjamin_team))
-
-
-
-    prio, aaron_team = heapq.heappop(team_filler)
-    teams[aaron_team].add_player("Aaron", present_players["Aaron"])
-    heapq.heappush(team_filler, (teams[aaron_team].get_size(), aaron_team))
-
-    prio, geon_team = heapq.heappop(team_filler)
-    teams[geon_team].add_player("Geon", present_players["Geon"])
     
-    if("Jenna" in present_players):
-        teams[geon_team].add_player("Jenna", present_players["Jenna"])
-        present_players.pop("Jenna")
-
-    heapq.heappush(team_filler, (teams[geon_team].get_size(), geon_team))
-
-
-
-    present_players.pop("Adam")
-    present_players.pop("Benjamin")
-    present_players.pop("Aaron")
-    present_players.pop("Geon")
-
+    curr_players = ["Adam", "Benjamin", "Aaron", "Geon"]
+    random.shuffle(curr_players)
+    for p in curr_players:
+        prio, curr_team = heapq.heappop(team_filler)
+        teams[curr_team].add_player(p, present_players[p])
+        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
+        if(p == "Geon" and "Jenna" in present_players):
+            teams[curr_team].add_player("Jenna", present_players["Jenna"])
+            present_players.pop("Jenna")
+        present_players.pop(p)
+    
 elif "Adam" in present_players and "Benjamin" in present_players and "Aiden" in present_players and "Geon" in present_players:
     
-    prio, adam_team = heapq.heappop(team_filler)
-    teams[adam_team].add_player("Adam", present_players["Adam"])
-    heapq.heappush(team_filler, (teams[adam_team].get_size(), adam_team))
-
-    prio, benjamin_team = heapq.heappop(team_filler)
-    teams[benjamin_team].add_player("Benjamin", present_players["Benjamin"])
-    heapq.heappush(team_filler, (teams[benjamin_team].get_size(), benjamin_team))
-
-    prio, aiden_team = heapq.heappop(team_filler)
-    teams[aiden_team].add_player("Aiden", present_players["Aiden"])
-    heapq.heappush(team_filler, (teams[aiden_team].get_size(), aiden_team))
-
-    prio, geon_team = heapq.heappop(team_filler)
-    teams[geon_team].add_player("Geon", present_players["Geon"])
-    if("Jenna" in present_players):
-        teams[geon_team].add_player("Jenna", present_players["Jenna"])
-        present_players.pop("Jenna")
-    heapq.heappush(team_filler, (teams[geon_team].get_size(), geon_team))
-
-    
-    present_players.pop("Adam")
-    present_players.pop("Benjamin")
-    present_players.pop("Aiden")
-    present_players.pop("Geon")
+    curr_players = ["Adam", "Benjamin", "Aiden", "Geon"]
+    random.shuffle(curr_players)
+    for p in curr_players:
+        prio, curr_team = heapq.heappop(team_filler)
+        teams[curr_team].add_player(p, present_players[p])
+        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
+        if(p == "Geon" and "Jenna" in present_players):
+            teams[curr_team].add_player("Jenna", present_players["Jenna"])
+            present_players.pop("Jenna")
+        present_players.pop(p)
 
 
 
 elif "Adam" in present_players and "Benjamin" in present_players and "Aaron" in present_players: 
     
-    prio, adam_team = heapq.heappop(team_filler)
-    teams[adam_team].add_player("Adam", present_players["Adam"])
-    heapq.heappush(team_filler, (teams[adam_team].get_size(), adam_team))
-
-    prio, benjamin_team = heapq.heappop(team_filler)
-    teams[benjamin_team].add_player("Benjamin", present_players["Benjamin"])
-    heapq.heappush(team_filler, (teams[benjamin_team].get_size(), benjamin_team))
-
-    prio, aaron_team = heapq.heappop(team_filler)
-    teams[aaron_team].add_player("Aaron", present_players["Aaron"])
-    heapq.heappush(team_filler, (teams[aaron_team].get_size(), aaron_team))
-
-    
-    present_players.pop("Adam")
-    present_players.pop("Benjamin")
-    present_players.pop("Aaron")
+    curr_players = ["Adam", "Benjamin", "Aaron"]
+    random.shuffle(curr_players)
+    for p in curr_players:
+        prio, curr_team = heapq.heappop(team_filler)
+        teams[curr_team].add_player(p, present_players[p])
+        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
+        present_players.pop(p)
 
 elif "Adam" in present_players and "Benjamin" in present_players: 
     
-    prio, adam_team = heapq.heappop(team_filler)
-    teams[adam_team].add_player("Adam", present_players["Adam"])
-    heapq.heappush(team_filler, (teams[adam_team].get_size(), adam_team))
-
-    prio, benjamin_team = heapq.heappop(team_filler)
-    teams[benjamin_team].add_player("Benjamin", present_players["Benjamin"])
-    heapq.heappush(team_filler, (teams[benjamin_team].get_size(), benjamin_team))
-
-    
-    present_players.pop("Adam")
-    present_players.pop("Benjamin")
+    curr_players = ["Adam", "Benjamin"]
+    random.shuffle(curr_players)
+    for p in curr_players:
+        prio, curr_team = heapq.heappop(team_filler)
+        teams[curr_team].add_player(p, present_players[p])
+        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
+        present_players.pop(p)
 
 elif "Adam" in present_players and "Aaron" in present_players:
     
-    prio, adam_team = heapq.heappop(team_filler)
-    teams[adam_team].add_player("Adam", present_players["Adam"])
-    heapq.heappush(team_filler, (teams[adam_team].get_size(), adam_team))
-
-    prio, aaron_team = heapq.heappop(team_filler)
-    teams[aaron_team].add_player("Aaron", present_players["Aaron"])
-    heapq.heappush(team_filler, (teams[aaron_team].get_size(), aaron_team))
-
-    
-    present_players.pop("Adam")
-    present_players.pop("Aaron")
+    curr_players = ["Adam", "Aaron"]
+    random.shuffle(curr_players)
+    for p in curr_players:
+        prio, curr_team = heapq.heappop(team_filler)
+        teams[curr_team].add_player(p, present_players[p])
+        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
+        present_players.pop(p)
 
 elif "Aaron" in present_players and "Benjamin" in present_players: 
 
-    prio, benjamin_team = heapq.heappop(team_filler)
-    teams[benjamin_team].add_player("Benjamin", present_players["Benjamin"])
-    heapq.heappush(team_filler, (teams[benjamin_team].get_size(), benjamin_team))
-
-    prio, aaron_team = heapq.heappop(team_filler)
-    teams[aaron_team].add_player("Aaron", present_players["Aaron"])
-    heapq.heappush(team_filler, (teams[aaron_team].get_size(), aaron_team))
-    
-    present_players.pop("Benjamin")
-    present_players.pop("Aaron")
+    curr_players = ["Benjamin", "Aaron"]
+    random.shuffle(curr_players)
+    for p in curr_players:
+        prio, curr_team = heapq.heappop(team_filler)
+        teams[curr_team].add_player(p, present_players[p])
+        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
+        present_players.pop(p)
 
 
 
@@ -280,12 +228,6 @@ random.shuffle(values)
 teams = dict(zip(keys, values))
 
 
-# for t in teams:
-#     print(t, teams[t].get_size(), teams[t].get_all_avg_stats())
-#     for p in teams[t].get_players():
-#         print(teams[t].get_player(p))
-
-
 found_team = False
 
 def check_balance(teams, balance_val):
@@ -303,6 +245,8 @@ def check_balance(teams, balance_val):
 
 start_time = time.time()
 balance_val = 1
+if(len(present_players) < 5):
+    found_team = True
 while(not found_team):
     
     player_copy = present_players.copy()
@@ -330,8 +274,10 @@ while(not found_team):
 
     
 for t in teams:
-    print(t, teams[t].get_size(), teams[t].get_all_avg_stats())
-    team_players = ""
+    print("*** TEAM: " + t + " ***")
+    print("TEAM STATS: " + str(teams[t].get_all_avg_stats()))
+    team_players = "TEAM MEMBERS: "
     for p in teams[t].get_players():
         team_players += p + ", "
     print(team_players)
+    print()
