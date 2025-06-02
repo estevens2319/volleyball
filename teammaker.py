@@ -237,6 +237,7 @@ while(not found_team):
         start_time = time.time()
         print()
         print("Timeout no teams found with balance value " + str(balance_val) +  ". Adjusting balance value")
+        print()
         balance_val += .5
 
 
