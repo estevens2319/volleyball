@@ -3,6 +3,7 @@ import random
 import heapq
 import copy
 import time
+import requests
 
 
 class Player:
@@ -81,14 +82,20 @@ def convert(value):
 # Get the present players 
 
 present_players = {}
-with open('names.csv', mode='r', newline='') as file:
-    reader = csv.DictReader(file)
-    for row in reader:
-        key = row['Name']
-        cleaned_row = {k: convert(v) for k, v in row.items()}
-        if(cleaned_row["Present"] == "Y"):
-            present_players[key] = cleaned_row
 
+sheet_url = "https://docs.google.com/spreadsheets/d/1ABC1234XYZ5678abcdefg/gviz/tq?tqx=out:csv&sheet=Sheet1"
+
+response = requests.get(sheet_url)
+response.raise_for_status()
+
+decoded = response.content.decode('utf-8').splitlines()
+reader = csv.DictReader(decoded)
+
+for row in reader:
+    key = row['Name']
+    cleaned_row = {k: convert(v) for k, v in row.items()}
+    if cleaned_row["Present"] == "Y":
+        present_players[key] = cleaned_row
 
 # Create the teams 
 
