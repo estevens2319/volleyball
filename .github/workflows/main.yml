@@ -20,6 +20,6 @@ jobs:
         run: |
           pip install requests
 
-      - name: Run fetch script
+      - name: GENERATE THE TEAMS
         run: |
           python teammaker.py
