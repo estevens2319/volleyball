@@ -189,10 +189,18 @@ def check_balance(teams, balance_val):
         for t2 in teams:
             t1_stats = teams[t1].get_all_avg_stats()
             t2_stats = teams[t2].get_all_avg_stats()
+            t1_avg_all_stats = 0
+            t2_avg_all_stats = 0
             for stat in t1_stats:
                 val1 = t1_stats.get(stat, 0)
                 val2 = t2_stats.get(stat, 0)
+                t1_avg_all_stats += val1
+                t2_avg_all_stats += val2
                 if abs(val1 - val2) > balance_val:
+                    return False
+            t1_avg_all_stats = t1_avg_all_stats / len(t1_stats)
+            t2_avg_all_stats = t2_avg_all_stats / len(t2_stats)
+            if abs(t1_avg_all_stats - t2_avg_all_stats) > balance_val:
                     return False
 
     return True
