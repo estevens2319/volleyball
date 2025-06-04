@@ -1,5 +1,4 @@
 import http.client
-import ssl
 import csv
 from urllib.parse import urlparse
 import random
@@ -7,6 +6,7 @@ import heapq
 import copy
 import time
 import urllib.request
+import json
 
 
 
@@ -82,209 +82,266 @@ class Team:
 
     def get_size(self):
         return len(self.players)
+    
 
 def convert(value):
-    if value == '':
-        return None
+        if value == '':
+            return None
+        try:
+            return float(value)
+        except ValueError:
+            return value  
+
+
+def lambda_handler(event, context):
+    sheet_url = event.get("sheet_url")
+    
+    if not sheet_url:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"error": "Missing 'sheet_url' in input"})
+        }
+    
+
+    # Get the present players 
+    present_players = {}
+    print("Loading Player Data")
+    parsed_url = urlparse(sheet_url)
+    conn = http.client.HTTPSConnection(parsed_url.hostname)
+    path = parsed_url.path + "?" + parsed_url.query
     try:
-        return float(value)
-    except ValueError:
-        return value  
+        conn.request("GET", path)
+        res = conn.getresponse()
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": f"Failed to retrieve sheet: {str(e)}"})
+        }
 
-# Get the present players 
+    if res.status in (301, 302, 303, 307, 308):
+        redirect_url = res.getheader('Location')
+        if not redirect_url:
+            return {
+                "statusCode": 502,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "Redirected but no Location header found."})
+            }
+        with urllib.request.urlopen(redirect_url) as redirected_response:
+            data = redirected_response.read().decode('utf-8').splitlines()
 
-present_players = {}
-sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTet6UPHdfdsaKkFN_VB5ggHacxEDxakmZH6syhroLB7oJ3aHr5clmSbEipnQTTfLy6nfdYe6M6ZAHs/pub?output=csv"
-print("Loading player data")
-parsed_url = urlparse(sheet_url)
-conn = http.client.HTTPSConnection(parsed_url.hostname, context=ssl._create_unverified_context())
-path = parsed_url.path + "?" + parsed_url.query
-conn.request("GET", path)
-res = conn.getresponse()
+    else:
+        data = res.read().decode('utf-8').splitlines()
 
-# If redirected, follow the new URL
-if res.status in (301, 302, 303, 307, 308):
-    redirect_url = res.getheader('Location')
-    if not redirect_url:
-        raise Exception("Redirected but no Location header found.")
+    # Parse CSV
+    reader = csv.DictReader(data)
 
-    # Use urllib.request to simplify following the redirect
-    with urllib.request.urlopen(redirect_url) as redirected_response:
-        data = redirected_response.read().decode('utf-8').splitlines()
+    captains = []
+    for row in reader:
+        key = row['Name']
+        cleaned_row = {k: convert(v) for k, v in row.items()}
+        if cleaned_row["Present"] == "Y":
+            present_players[key] = cleaned_row
+            if(present_players[key]["Captain"] == "Y"):
+                captains.append(key)
 
-else:
-    data = res.read().decode('utf-8').splitlines()
+    # Create the teams 
+    print("Successfully Loaded Player Data")
 
-# Parse CSV
-reader = csv.DictReader(data)
-
-
-for row in reader:
-    key = row['Name']
-    cleaned_row = {k: convert(v) for k, v in row.items()}
-    if cleaned_row["Present"] == "Y":
-        present_players[key] = cleaned_row
-
-# Create the teams 
-print("Successfully Loaded Data")
-
-num_players = len(present_players)
-team_names = []
-teams = {}
-
-if(num_players < 15):
-    team_names = ["Pikachu", "Clefary"]
-    for team_name in team_names:
-        teams[team_name] = Team(team_name)
-
-
-elif(num_players < 22):
-    team_names = ["Piplup", "Turtwig", "Chimchar"]
-    for team_name in team_names:
-        teams[team_name] = Team(team_name)
-
-
-elif(num_players < 29):
-    team_names = ["Pikachu", "Piplup", "Turtwig", "Chimchar"]
-    for team_name in team_names:
-        teams[team_name] = Team(team_name)
-
-else:
-    team_names = ["Pikachu", "Piplup", "Turtwig", "Chimchar", "Clefary"]
-    for team_name in team_names:
-        teams[team_name] = Team(team_name)
-
-
-random.shuffle(team_names)
-
-team_filler = []
-for tn in team_names:
-    heapq.heappush(team_filler, (0, tn))
-
-
-
-# separate captains 
-
-captains = ["Adam", "Benjamin", "Aaron", "Geon"]
-
-if("Aaron" not in present_players):
-    captains.append("Aiden")
-
-random.shuffle(captains)
-
-for c in captains:
-    if(c in present_players):
-        prio, curr_team = heapq.heappop(team_filler)
-        teams[curr_team].add_player(c, present_players[c])
-        if(c == "Geon" and "Jenna" in present_players):
-            teams[curr_team].add_player("Jenna", present_players["Jenna"])
-            present_players.pop("Jenna")
-        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
-        present_players.pop(c)
-
-
-
-# Find pairs 
-pairs = {}
-asterisks = []
-for player in present_players:
-    if present_players[player]["Asterisk"] != None:
-        asterisks.append(player)
-    if present_players[player]["BeWith"] != None:
-        bewith = (present_players[player]["BeWith"])
-        if bewith not in pairs:
-            pairs[player] = bewith
+    num_players = len(present_players)
+    num_teams = 2
+    if(num_players < 15):
+        num_teams = 2
+    elif(num_players < 22):
+        num_teams = 3
+    elif(num_players < 29):
+        num_teams = 4
+    else:
+        num_teams = 5
     
-for p in asterisks:
-    bewith = present_players[p]["BeWith"]
-    prio, curr_team = heapq.heappop(team_filler)
-    teams[curr_team].add_player(p, present_players[p])
-    present_players.pop(p)
-    if(bewith != None):
-        teams[curr_team].add_player(bewith, present_players[bewith])
-        present_players.pop(bewith)
-    heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
+    event_teams = event.get("num_teams")
+    
+    if not event_teams:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"error": "Missing 'num_teams' in input"})
+        }
+    if event_teams != -1:
+        if not isinstance(event_teams, int) or event_teams < 2 or event_teams > 5:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "'num_teams' must be between 2 and 5"})
+            }
+        num_teams = event_teams
+
+    
+    team_names = []
+    teams = {}
+
+    if(num_teams == 2):
+        team_names = ["Pikachu", "Clefary"]
+        for team_name in team_names:
+            teams[team_name] = Team(team_name)
+
+    elif(num_teams == 3):
+        team_names = ["Piplup", "Turtwig", "Chimchar"]
+        for team_name in team_names:
+            teams[team_name] = Team(team_name)
 
 
-for pair in pairs:
-    player = pair
-    bewith = pairs[pair]
-    if(bewith in present_players and player in present_players):
+    elif(num_teams == 4):
+        team_names = ["Pikachu", "Piplup", "Turtwig", "Chimchar"]
+        for team_name in team_names:
+            teams[team_name] = Team(team_name)
+
+    else:
+        team_names = ["Pikachu", "Piplup", "Turtwig", "Chimchar", "Clefary"]
+        for team_name in team_names:
+            teams[team_name] = Team(team_name)
+
+
+    random.shuffle(team_names)
+
+    team_filler = []
+    for tn in team_names:
+        heapq.heappush(team_filler, (0, tn))
+
+
+    random.shuffle(captains)
+
+    for c in captains:
+        if(c in present_players):
+            prio, curr_team = heapq.heappop(team_filler)
+            teams[curr_team].add_player(c, present_players[c])
+            bewith = present_players[c]["BeWith"]
+            if (bewith != None and bewith in present_players):
+                teams[curr_team].add_player(bewith, present_players[bewith])
+                present_players.pop(bewith)
+            heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
+            present_players.pop(c)
+
+    # Find pairs 
+    pairs = {}
+    asterisks = []
+    for player in present_players:
+        if present_players[player]["Asterisk"] != None:
+            asterisks.append(player)
+        if present_players[player]["BeWith"] != None:
+            bewith = (present_players[player]["BeWith"])
+            if bewith not in pairs:
+                pairs[player] = bewith
+        
+    for p in asterisks:
+        bewith = present_players[p]["BeWith"]
         prio, curr_team = heapq.heappop(team_filler)
-        teams[curr_team].add_player(player, present_players[player])
-        teams[curr_team].add_player(bewith, present_players[bewith])
-        present_players.pop(player)
-        present_players.pop(bewith)
+        if(p in present_players):
+            teams[curr_team].add_player(p, present_players[p])
+            present_players.pop(p)
+        if(bewith != None and bewith in present_players):
+            teams[curr_team].add_player(bewith, present_players[bewith])
+            present_players.pop(bewith)
         heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
 
 
+    for pair in pairs:
+        player = pair
+        bewith = pairs[pair]
+        prio, curr_team = heapq.heappop(team_filler)
+        if (player in present_players):
+            teams[curr_team].add_player(player, present_players[player])
+            present_players.pop(player)
+        if(bewith in present_players): 
+            teams[curr_team].add_player(bewith, present_players[bewith])
+            present_players.pop(bewith)
+        heapq.heappush(team_filler, (teams[curr_team].get_size(), curr_team))
 
-keys = list(teams.keys())
-values = list(teams.values())
-random.shuffle(values)
-teams = dict(zip(keys, values))
 
+    keys = list(teams.keys())
+    values = list(teams.values())
+    random.shuffle(values)
+    teams = dict(zip(keys, values))
 
-found_team = False
+    found_team = False
 
-def check_balance(teams, balance_val):
-    for t1 in teams:
-        for t2 in teams:
-            t1_stats = teams[t1].get_all_avg_stats()
-            t2_stats = teams[t2].get_all_avg_stats()
-            
-            for stat in t1_stats:
-                val1 = t1_stats.get(stat, 0)
-                val2 = t2_stats.get(stat, 0)
+    def check_balance(teams, balance_val):
+        for t1 in teams:
+            for t2 in teams:
+                t1_stats = teams[t1].get_all_avg_stats()
+                t2_stats = teams[t2].get_all_avg_stats()
                 
-                if abs(val1 - val2) > balance_val:
-                    return False
-            
-            if abs(teams[t1].get_avg_of_all_stats() - teams[t2].get_avg_of_all_stats()) > balance_val:
-                    return False
+                for stat in t1_stats:
+                    val1 = t1_stats.get(stat, 0)
+                    val2 = t2_stats.get(stat, 0)
+                    
+                    if abs(val1 - val2) > balance_val:
+                        return False
+                
+                if abs(teams[t1].get_avg_of_all_stats() - teams[t2].get_avg_of_all_stats()) > balance_val:
+                        return False
 
-    return True
+        return True
 
-start_time = time.time()
-balance_val = .5
-if(len(present_players) < 5):
-    found_team = True
-while(not found_team):
-    player_copy = present_players.copy()
-    teams_copy = copy.deepcopy(teams)
-    team_filler_copy = copy.deepcopy(team_filler)
+    start_time = time.time()
+    balance_val = .5
+    if(len(present_players) < 1):
+        found_team = True
+    while(not found_team):
+        teams_copy = copy.deepcopy(teams)
+        team_filler_copy = copy.deepcopy(team_filler)
+        
+        shuffled_names = list(present_players.keys())
+        random.shuffle(shuffled_names)
+        
+        while(len(shuffled_names) > 0):
+            curr_name = shuffled_names.pop()
+            prio, curr_team = heapq.heappop(team_filler_copy)
+            teams_copy[curr_team].add_player(curr_name, present_players[curr_name])
+            heapq.heappush(team_filler_copy, (teams_copy[curr_team].get_size(), curr_team))
+        
+        found_team = check_balance(teams_copy, balance_val)
+
+        if(found_team):
+            teams = teams_copy
+
+        if(time.time() - start_time > 7):
+            start_time = time.time()
+            print()
+            print("Timeout no teams found with balance value " + str(balance_val) +  ". Adjusting balance value")
+            print()
+            balance_val += .25
+
+
+
+
+    output = {}
+    output["balance_val"] = balance_val
+    output["teams"] = {}
+
+    for t in teams:
+        output["teams"][str(t)] = {}
+        output["teams"][str(t)]["team_stats"] = teams[t].get_all_avg_stats()
+        output["teams"][str(t)]["team_stat_average"] = round(teams[t].get_avg_of_all_stats(), 3)
+        team_players = []
+        for p in teams[t].get_players():
+            team_players.append(p)
+        output["teams"][str(t)]["players"] = team_players
     
-    shuffled_names = list(player_copy.keys())
-    random.shuffle(shuffled_names)
-    
-    while(len(shuffled_names) > 0):
-        curr_name = shuffled_names.pop()
-        prio, curr_team = heapq.heappop(team_filler_copy)
-        teams_copy[curr_team].add_player(curr_name, player_copy[curr_name])
-        heapq.heappush(team_filler_copy, (teams_copy[curr_team].get_size(), curr_team))
-    
-    found_team = check_balance(teams_copy, balance_val)
-
-    if(found_team):
-        teams = teams_copy
-
-    if(time.time() - start_time > 5):
-        start_time = time.time()
-        print()
-        print("Timeout no teams found with balance value " + str(balance_val) +  ". Adjusting balance value")
-        print()
-        balance_val += .25
+    return {
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps(output)
+    }
+    # print(output['balance_val'])
+    # for team in output["teams"]:
+    #     print(team, output["teams"][team])
 
 
+# Sample Usage:
+sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTet6UPHdfdsaKkFN_VB5ggHacxEDxakmZH6syhroLB7oJ3aHr5clmSbEipnQTTfLy6nfdYe6M6ZAHs/pub?output=csv"
+event = {}
+event["sheet_url"] = sheet_url
+event["num_teams"] = -1
+output = json.loads(lambda_handler(event, None)["body"])
 
-
-print("Teams balance value: ", balance_val)
-for t in teams:
-    print("*** TEAM: " + t + " ***")
-    print("TEAM STATS: " + str(teams[t].get_all_avg_stats()))
-    print("TOTAL TEAM STAT AVERAGE:", round(teams[t].get_avg_of_all_stats(), 3))
-    team_players = "TEAM MEMBERS: "
-    for p in teams[t].get_players():
-        team_players += p + ", "
-    print(team_players)
-    print()
+print(output['balance_val'])
+for team in output["teams"]:
+    print(team, output["teams"][team])
