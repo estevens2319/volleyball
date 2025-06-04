@@ -22,4 +22,4 @@ jobs:
 
       - name: GENERATE THE TEAMS
         run: |
-          python teammaker.py
+          python teamsbuilder/teammaker.py
