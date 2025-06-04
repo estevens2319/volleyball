@@ -1,9 +1,13 @@
+import http.client
+import ssl
 import csv
+from urllib.parse import urlparse
 import random
 import heapq
 import copy
 import time
-import requests
+import urllib.request
+
 
 
 class Player:
@@ -90,14 +94,30 @@ def convert(value):
 # Get the present players 
 
 present_players = {}
-
 sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTet6UPHdfdsaKkFN_VB5ggHacxEDxakmZH6syhroLB7oJ3aHr5clmSbEipnQTTfLy6nfdYe6M6ZAHs/pub?output=csv"
+print("Loading player data")
+parsed_url = urlparse(sheet_url)
+conn = http.client.HTTPSConnection(parsed_url.hostname, context=ssl._create_unverified_context())
+path = parsed_url.path + "?" + parsed_url.query
+conn.request("GET", path)
+res = conn.getresponse()
 
-response = requests.get(sheet_url)
-response.raise_for_status()
+# If redirected, follow the new URL
+if res.status in (301, 302, 303, 307, 308):
+    redirect_url = res.getheader('Location')
+    if not redirect_url:
+        raise Exception("Redirected but no Location header found.")
 
-decoded = response.content.decode('utf-8').splitlines()
-reader = csv.DictReader(decoded)
+    # Use urllib.request to simplify following the redirect
+    with urllib.request.urlopen(redirect_url) as redirected_response:
+        data = redirected_response.read().decode('utf-8').splitlines()
+
+else:
+    data = res.read().decode('utf-8').splitlines()
+
+# Parse CSV
+reader = csv.DictReader(data)
+
 
 for row in reader:
     key = row['Name']
@@ -106,6 +126,7 @@ for row in reader:
         present_players[key] = cleaned_row
 
 # Create the teams 
+print("Successfully Loaded Data")
 
 num_players = len(present_players)
 team_names = []
@@ -252,7 +273,7 @@ while(not found_team):
         print()
         print("Timeout no teams found with balance value " + str(balance_val) +  ". Adjusting balance value")
         print()
-        balance_val += .5
+        balance_val += .25
 
 
 
