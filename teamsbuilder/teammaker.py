@@ -255,7 +255,9 @@ while(not found_team):
         balance_val += .5
 
 
-    
+
+
+print("Teams balance value: ", balance_val)
 for t in teams:
     print("*** TEAM: " + t + " ***")
     print("TEAM STATS: " + str(teams[t].get_all_avg_stats()))
