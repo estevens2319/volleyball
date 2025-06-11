@@ -106,7 +106,14 @@ def lambda_handler(event, context):
     # Get the present players 
     present_players = {}
     print("Loading Player Data")
+        
     parsed_url = urlparse(sheet_url)
+    if not parsed_url.scheme or not parsed_url.netloc:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"error": "Invalid sheet URL"})
+        }
+
     conn = http.client.HTTPSConnection(parsed_url.hostname)
     path = parsed_url.path + "?" + parsed_url.query
     try:
@@ -126,14 +133,27 @@ def lambda_handler(event, context):
                 "headers": {"Content-Type": "application/json"},
                 "body": json.dumps({"error": "Redirected but no Location header found."})
             }
-        with urllib.request.urlopen(redirect_url) as redirected_response:
-            data = redirected_response.read().decode('utf-8').splitlines()
+
+        try:
+            with urllib.request.urlopen(redirect_url) as redirected_response:
+                data = redirected_response.read().decode('utf-8').splitlines()
+        except Exception as e:
+            return {
+                "statusCode": 500,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": f"Redirected URL fetch failed: {str(e)}"})
+            }
 
     else:
         data = res.read().decode('utf-8').splitlines()
 
     # Parse CSV
     reader = csv.DictReader(data)
+    if not reader.fieldnames or 'Name' not in reader.fieldnames:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"error": "Sheet format is invalid or missing required headers."})
+        }
 
     captains = []
     for row in reader:
@@ -178,7 +198,7 @@ def lambda_handler(event, context):
     teams = {}
 
     if(num_teams == 2):
-        team_names = ["Pikachu", "Clefary"]
+        team_names = ["Pikachu", "Clefairy"]
         for team_name in team_names:
             teams[team_name] = Team(team_name)
 
@@ -194,7 +214,7 @@ def lambda_handler(event, context):
             teams[team_name] = Team(team_name)
 
     else:
-        team_names = ["Pikachu", "Piplup", "Turtwig", "Chimchar", "Clefary"]
+        team_names = ["Pikachu", "Piplup", "Turtwig", "Chimchar", "Clefairy"]
         for team_name in team_names:
             teams[team_name] = Team(team_name)
 
@@ -330,9 +350,8 @@ def lambda_handler(event, context):
         "headers": {"Content-Type": "application/json"},
         "body": json.dumps(output)
     }
-    # print(output['balance_val'])
-    # for team in output["teams"]:
-    #     print(team, output["teams"][team])
+
+
 
 
 # Sample Usage:
